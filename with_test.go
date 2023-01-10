@@ -1,6 +1,7 @@
 package with
 
 import (
+	"errors"
 	"io"
 	"testing"
 )
@@ -68,6 +69,12 @@ func TestRecover(t *testing.T) {
 			args:     args{func() error { panic("can not handle that") }},
 			wantErr:  true,
 			errorStr: "panic: can not handle that",
+		},
+		{
+			name:     "Runs an error if the callback function returns an error",
+			args:     args{func() error { return errors.New("callback error") }},
+			wantErr:  true,
+			errorStr: "callback error",
 		},
 	}
 	for _, tt := range tests {
