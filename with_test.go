@@ -132,3 +132,83 @@ func TestRecover(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSecond(t *testing.T) {
+	type args struct {
+		cb ErrorResultSecondFunction
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			"returns nil if the callback does not return error",
+			args{func() (any, error) { return nil, nil }},
+			false,
+		},
+		{
+			"returns error if the callback returns error",
+			args{func() (any, error) { return nil, errors.New("error") }},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cb := GetSecond(tt.args.cb)
+			if err := cb(); (err != nil) != tt.wantErr {
+				t.Errorf("GetSecond()() = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestErrors(t *testing.T) {
+	type args struct {
+		cbs []ErrorResultFunction
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantErr  bool
+		errorStr string
+	}{
+		{
+			"returns no error if no callbacks are passed",
+			args{[]ErrorResultFunction{}},
+			false,
+			"",
+		},
+		{
+			"returns no error if all callbacks succeed",
+			args{[]ErrorResultFunction{
+				func() error { return nil },
+				func() error { return nil },
+			}},
+			false,
+			"",
+		},
+		{
+			"returns the first encountered error",
+			args{[]ErrorResultFunction{
+				func() error { return nil },
+				func() error { return errors.New("error two") },
+				func() error { t.FailNow(); return nil },
+			}},
+			true,
+			"error two",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := Errors(tt.args.cbs...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Errors() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if err != nil && err.Error() != tt.errorStr {
+				t.Errorf("Recover() error = %v, errorStr %v", err, tt.errorStr)
+			}
+
+		})
+	}
+}

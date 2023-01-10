@@ -1,3 +1,4 @@
+// Package with provides collection of helper functions
 package with
 
 import (
@@ -30,6 +31,7 @@ func Readers(fileNames []string, cb func(...io.Reader) error) error {
 	return cb(readers...)
 }
 
+// Recover captures any panic in the callback function and returns it as an error
 func Recover(cb func() error) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -37,4 +39,32 @@ func Recover(cb func() error) (err error) {
 		}
 	}()
 	return cb()
+}
+
+// ErrorResultFunction is a function that accepts no parameters and returns an error
+type ErrorResultFunction = func() error
+
+// ErrorResultSecondFunction is a function that accepts no parameters and returns
+// error as second parameter, first one is ignored
+type ErrorResultSecondFunction = func() (any, error)
+
+// GetSecond is a higher order function that returns ErrorResult from ErrorResultSecond function
+func GetSecond(cb ErrorResultSecondFunction) ErrorResultFunction {
+	return func() error {
+		_, err := cb()
+		return err
+	}
+}
+
+// Errors is s function that accepts multiple ErrorResultFunction-s, runs them
+// in sequence and returns the first encountered error or nil
+func Errors(cbs ...ErrorResultFunction) error {
+	var err error
+	for i := range cbs {
+		err = cbs[i]()
+		if err != nil {
+			return err
+		}
+	}
+	return err
 }
