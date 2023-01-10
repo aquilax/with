@@ -29,3 +29,12 @@ func Readers(fileNames []string, cb func(...io.Reader) error) error {
 	}
 	return cb(readers...)
 }
+
+func Recover(cb func() error) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %s", r)
+		}
+	}()
+	return cb()
+}
