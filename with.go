@@ -22,7 +22,7 @@ func Readers(fileNames []string, cb func(...io.Reader) error) error {
 	for i, fileName := range fileNames {
 		f, err := os.Open(fileName)
 		if err != nil {
-			return fmt.Errorf("error opening %s: %w", fileName, err)
+			return err
 		}
 		readers[i] = f
 		defer f.Close()
