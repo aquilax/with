@@ -4,6 +4,7 @@ package with
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 )
 
@@ -67,4 +68,10 @@ func Errors(cbs ...ErrorResultFunction) error {
 		}
 	}
 	return err
+}
+
+// MathRand returns new math.Rand seeded with the seed value. Note that the
+// randomness source is not safe for concurrent use
+func MathRand(seed int64, cb func(rng *rand.Rand) error) error {
+	return cb(rand.New(rand.NewSource(seed)))
 }

@@ -3,6 +3,7 @@ package with
 import (
 	"errors"
 	"io"
+	"math/rand"
 	"testing"
 )
 
@@ -208,7 +209,43 @@ func TestErrors(t *testing.T) {
 			if err != nil && err.Error() != tt.errorStr {
 				t.Errorf("Recover() error = %v, errorStr %v", err, tt.errorStr)
 			}
+		})
+	}
+}
 
+func TestMathRand(t *testing.T) {
+	type args struct {
+		seed int64
+		cb   func(rng *rand.Rand) error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			"Seeds the random generator as expected",
+			args{0, func(rng *rand.Rand) error {
+				want := 8717895732742165505
+				got := rng.Int()
+				if want != got {
+					t.Errorf("rng.Int() = %v, want = %v", got, want)
+				}
+				return nil
+			}},
+			false,
+		},
+		{
+			"returns error if callback returns error",
+			args{1, func(rng *rand.Rand) error { return errors.New("error") }},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := MathRand(tt.args.seed, tt.args.cb); (err != nil) != tt.wantErr {
+				t.Errorf("MathRand() error = %v, wantErr %v", err, tt.wantErr)
+			}
 		})
 	}
 }
