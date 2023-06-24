@@ -75,3 +75,8 @@ func Errors(cbs ...ErrorResultFunction) error {
 func MathRand(seed int64, cb func(rng *rand.Rand) error) error {
 	return cb(rand.New(rand.NewSource(seed)))
 }
+
+// Run executes the callback function and returns the result
+func Run[T any](fn func() T) T {
+	return fn()
+}
