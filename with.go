@@ -6,6 +6,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"sync"
 )
 
 // Reader tries to open a file name and calls the callback function with an io.Reader if successful
@@ -79,4 +80,14 @@ func MathRand(seed int64, cb func(rng *rand.Rand) error) error {
 // Run executes the callback function and returns the result
 func Run[T any](fn func() T) T {
 	return fn()
+}
+
+// MutexLock returns a lock function that runs a callback with a Mutex
+func Mutex() (lock func(cb func())) {
+	var mu sync.Mutex
+	return func(cb func()) {
+		mu.Lock()
+		defer mu.Unlock()
+		cb()
+	}
 }
